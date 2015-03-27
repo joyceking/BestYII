@@ -1,0 +1,81 @@
+{
+    "author": "Eugine Terentev <eugine@terentev.net>",
+	"name": "trntv/yii2-starter-kit",
+	"description": "Yii 2 Starter Kit Application Template",
+	"keywords": ["yii2", "framework", "start", "application template"],
+	"type": "project",
+	"license": "BSD-3-Clause",
+	"support": {
+		"issues": "https://github.com/yiisoft/yii2/issues?state=open",
+		"forum": "http://www.yiiframework.com/forum/",
+		"wiki": "http://www.yiiframework.com/wiki/",
+		"irc": "irc://irc.freenode.net/yii",
+		"source": "https://github.com/yiisoft/yii2"
+	},
+	"minimum-stability": "dev",
+	"require": {
+		"php": ">=5.4.0",
+        "ext-intl": "*",
+        "ext-mcrypt": "*",
+		"yiisoft/yii2": "~2.0",
+		"yiisoft/yii2-bootstrap": "*",
+		"yiisoft/yii2-swiftmailer": "*",
+		"yiisoft/yii2-authclient": "*",
+		"asofter/yii2-imperavi-redactor": "*",
+		"yiisoft/yii2-jui": "*",
+        "yiisoft/yii2-imagine": "*",
+        "mihaildev/yii2-elfinder": "*",
+        "trntv/yii2-aceeditor": "*",
+        "trntv/systeminfo": "*",
+        "trntv/yii2-file-kit": "*",
+        "trntv/yii2-bootstrap-datetimepicker": "dev-master",
+        "bower-asset/admin-lte": "~1.0",
+        "bower-asset/font-awesome": "~4.0",
+        "bower-asset/html5shiv": "~3.0",
+        "bower-asset/flot": "~0.8"
+	},
+	"require-dev": {
+		"yiisoft/yii2-debug": "*",
+        "trntv/yii2-debug-xhprof": "*",
+		"yiisoft/yii2-gii": "*",
+        "yiisoft/yii2-codeception": "*",
+        "yiisoft/yii2-faker": "*",
+        "codeception/codeception": "2.*"
+	},
+    "suggest": {
+        "trntv/yii2-deploy": "*"
+    },
+	"config": {
+		"process-timeout": 1800
+	},
+    "scripts": {
+        "post-create-project-cmd": [
+            "yii\\composer\\Installer::postCreateProject"
+        ]
+    },
+    "extra": {
+        "yii\\composer\\Installer::postCreateProject": {
+            "setPermission": [
+                {
+                    "frontend/runtime": "0777",
+                    "backend/runtime": "0777",
+                    "console/runtime": "0777",
+                    "frontend/web/assets": "0777",
+                    "backend/web/assets": "0777",
+                    "storage": "0777",
+                    "environments/local/backend/yii": "0755",
+                    "environments/local/frontend/yii": "0755",
+                    "environments/local/console/yii": "0755"
+                }
+            ],
+            "generateCookieValidationKey": [
+                "frontend/config/main.php",
+                "backend/config/main.php"
+            ]
+        },
+        "asset-installer-paths": {
+            "npm-asset-library": "vendor/npm",
+            "bower-asset-library": "vendor/bower"
+        }
+    }
+}

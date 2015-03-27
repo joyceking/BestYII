@@ -1,0 +1,25 @@
+# composer
+/vendor
+composer.phar
+composer.lock
+
+# IDE
+.idea
+nbproject
+.buildpath
+.project
+.settings
+
+# windows thumbnail cache
+Thumbs.db
+
+# Mac DS_Store Files
+.DS_Store
+
+# phpunit itself is not needed
+phpunit.phar
+# local phpunit config
+/phpunit.xml
+
+#hehb
+/yss.*

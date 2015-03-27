@@ -1,0 +1,61 @@
+<?php
+
+namespace backend\modules\wx\models;
+
+use Yii;
+use yii\web\HttpException;
+use backend\modules\wx\models\WxException;
+
+use backend\modules\wx\models\U;
+
+class MyErrorAction extends \yii\web\ErrorAction
+{
+	public function run()
+	{
+		if (($exception = Yii::$app->getErrorHandler()->exception) === null) {
+			return '';
+		}
+
+		if ($exception instanceof HttpException) {
+			$code = $exception->statusCode;
+		} else {
+			$code = $exception->getCode();
+		}
+		if ($exception instanceof Exception) {
+			$name = $exception->getName();
+		} else {
+			$name = $this->defaultName ?: Yii::t('yii', 'Error');
+		}
+		if ($code) {
+			$name .= " (#$code)";
+		}
+
+		if ($exception instanceof WxException) {
+			$resp =  json_decode($exception->getMessage(), true);	
+			$message = $resp['errmsg'];
+			$message .= ':'.$resp['errcode'];
+		}
+		else if ($exception instanceof HttpException) {
+			$message = $exception->getMessage();
+		}
+		else if ($exception instanceof UserException) {
+			$message = $exception->getMessage();
+		} else {
+			$message = $this->defaultMessage ?: Yii::t('yii', 'An internal server error occurred.');
+		}
+
+		if (Yii::$app->getRequest()->getIsAjax()) {
+			U::W([$name, $message]);
+			return "$name: $message";
+		} else {
+			U::W([$name, $message]);
+			return $this->controller->render($this->view ?: $this->id, [
+				'name' => $name,
+				'message' => $message,
+				'exception' => $exception,
+				'code'=>$exception->getCode(),
+			]);
+		}
+	}
+
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width = device-width; initial-scale=1">
+        <title>GeoLocation API演示程序</title>
+        <link rel="stylesheet" href="jquery.mobile.css" />
+         <script src="http://b.idealangel.cn/swiper-new/dist/jquery-1.10.1.min.js"></script>
+		 <script src="http://cdn.bootcss.com/jquery-mobile/1.4.3/jquery.mobile.min.js"></script>
+
+        <script type="text/javascript">
+		jQuery.MapConvert = {
+    x_pi: 3.14159265358979324 * 3000.0 / 180.0,
+    /// <summary>
+    /// 中国正常坐标系GCJ02协议的坐标，转到 百度地图对应的 BD09 协议坐标
+    ///  point 为传入的对象，例如{lat:xxxxx,lng:xxxxx}
+    /// </summary>
+    Convert_GCJ02_To_BD09: function (point) {
+        var x = point.lng, y = point.lat;
+        var z = Math.sqrt(x * x + y * y) + 0.00002 * Math.sin(y * jQuery.MapConvert.x_pi);
+        var theta = Math.atan2(y, x) + 0.000003 * Math.cos(x * jQuery.MapConvert.x_pi);
+        point.lng = z * Math.cos(theta) + 0.0065;
+        point.lat = z * Math.sin(theta) + 0.006;
+    },
+    /// <summary>
+    /// 百度地图对应的 BD09 协议坐标，转到 中国正常坐标系GCJ02协议的坐标
+    /// </summary>
+    Convert_BD09_To_GCJ02: function (point) {
+        var x = point.lng - 0.0065, y = point.lat - 0.006;
+        var z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * jQuery.MapConvert.x_pi);
+        var theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * jQuery.MapConvert.x_pi);
+        point.lng = z * Math.cos(theta);
+        point.lat = z * Math.sin(theta);
+    }
+}
+      function startgps()
+      {
+        var gps = navigator.geolocation;
+        if (gps)
+        {
+            gps.getCurrentPosition(showgps,
+                                 function(error)
+                                 {
+                                        alert("Got an error, code: " + error.code + " message: "+ error.message);
+                                 },
+                                 {maximumAge: 10000}); // 这里设置超时为10000毫秒，即10秒
+                }
+                else
+                {
+                    showgps();
+                }
+            }
+             
+      function showgps(position)
+      {
+                if (position)
+                {	
+					ponit = {lat: position.coords.latitude,lng:position.coords.longitude};
+					//$.MapConvert.Convert_GCJ02_To_BD09(ponit);
+                    var latitude = ponit.lat;
+                    var longitude = ponit.lng;
+                    alert("latitude: " + latitude + "\r\n longitude: "+ longitude);
+                }
+                else
+                    alert("position is null");
+      }
+  </script>
+         
+    </head>
+ 
+    <body>
+        <section class="ui-page ui-body-c ui-page-active" data-url="page1" id="page1" data-role="page">
+            <header role="banner"    class="ui-bar-a ui-header" data-role="header">
+                <h1 aria-level="1" role="heading"    tabindex="0" class="ui-title">GeoLocation API Demo</h1>
+            </header>
+            <div role="main" data-role="content" class="ui-content">
+                <input type="button" value="我的位置" onclick="startgps()"/>
+            </div>
+            <footer role="contentinfo" class="ui-bar-a ui-footer" data-role="footer">
+                <h1 aria-level="1" role="heading"    tabindex="0" class="ui-title">Allan Yan</h1>
+            </footer>
+        </section>
+</html>
