@@ -168,6 +168,33 @@ class Wechat extends \yii\base\Object {
     }
 
     public function getAccessToken($forceRefresh = false) {
+        $key = __METHOD__ . $this->_gh_id;
+        if (!$forceRefresh) {
+            if ($this->_accessToken !== null)
+                return $this->_accessToken;
+
+            $value = Yii::$app->cache->get($key);
+            if ($value !== false) {
+                $this->_accessToken = $value;
+                //U::W("getAccessToken from cache key=$key, value=$value");
+                return $value;
+            }
+        }
+
+        $arr = self::WxGetAccessToken($this->gh['appid'], $this->gh['appsecret']);
+        if (!isset($arr['access_token'])) {
+            //U::W([__METHOD__, $arr]);
+            die('no access_token......');
+        }
+        $this->_accessToken = $arr['access_token'];
+        Yii::$app->cache->set($key, $this->_accessToken, YII_DEBUG ? 1000 : 6000);
+        //Yii::$app->cache->set($key, $this->_accessToken, YII_DEBUG ? 3600 : 3600);
+        //U::W("getAccessToken from weixin====, $key, {$arr['access_token']}");
+        return $this->_accessToken;
+    }
+
+    public function getAccessToken1($forceRefresh = false) {
+        $key = __METHOD__ . $this->_gh_id;
         $gh = $this->gh;
         $tmpaccesstoken = unserialize($gh['access_token']);
         $this->_accessToken = $tmpaccesstoken['access_token'];
@@ -464,28 +491,60 @@ class Wechat extends \yii\base\Object {
         return $signPackage;
     }
 
-    private function getJsApiTicket() {
-        $gh = $this->gh;
-        $tmptick = unserialize($gh['jsapi_ticket']);
-        $this->_jsapi_ticket = $tmptick['ticket'];
-        if (is_array($tmptick) && !empty($tmptick['expire']) && $tmptick['expire'] > time()) {
-            return $this->_jsapi_ticket;
-        } else {
-            $accessToken = $this->getAccessToken();
-            $arr = U::curl("https://api.weixin.qq.com/cgi-bin/ticket/getticket?type=jsapi&access_token=" . $accessToken);
-            $ticket = @json_decode($arr, true);
-            if (empty($ticket) || !is_array($ticket) || empty($ticket['ticket']) || empty($ticket['expires_in'])) {
-                echo '获取微信公众号授权失败, 请稍后重试！ 公众平台返回原始数据为: <br />';
+    private function getJsApiTicket($forceRefresh = false) {
+        $key = __METHOD__ . $this->_gh_id;
+        if (!$forceRefresh) {
+            if ($this->_jsapi_ticket !== null)
+                return $this->_jsapi_ticket;
+            $value = Yii::$app->cache->get($key);
+            if ($value !== false) {
+                $this->_jsapi_ticket = $value;
+                //U::W("getJsapi_Ticket from cache key=$key, value=$value");
+                return $value;
             }
-            $record = array();
-            $record['ticket'] = $ticket['ticket'];
-            $record['expire'] = time() + $ticket['expires_in'];
-            $mgh = MGh::findOne($gh['gh_id']);
-            $mgh->jsapi_ticket = serialize($record);
-            $mgh->save();
-            $this->_jsapi_ticket = $record['ticket'];
-            return $this->_jsapi_ticket;
         }
+
+        $arr = self::WxGetJsApiTicket();
+        if (!isset($arr['ticket'])) {
+            //U::W([__METHOD__, $arr]);
+            die('no access_token......');
+        }
+        $this->_jsapi_ticket = $arr['ticket'];
+        Yii::$app->cache->set($key, $this->_jsapi_ticket, YII_DEBUG ? 1000 : 6000);
+        //Yii::$app->cache->set($key, $this->_accessToken, YII_DEBUG ? 3600 : 3600);
+        //U::W("getAccessToken from weixin====, $key, {$arr['access_token']}");        
+        return $this->_jsapi_ticket;
+
+        /*
+          $gh = $this->gh;
+          $tmptick = unserialize($gh['jsapi_ticket']);
+          $this->_jsapi_ticket = $tmptick['ticket'];
+          if (is_array($tmptick) && !empty($tmptick['expire']) && $tmptick['expire'] > time()) {
+          return $this->_jsapi_ticket;
+          } else {
+          $accessToken = $this->getAccessToken();
+          $arr = U::curl("https://api.weixin.qq.com/cgi-bin/ticket/getticket?type=jsapi&access_token=" . $accessToken);
+          $ticket = @json_decode($arr, true);
+          if (empty($ticket) || !is_array($ticket) || empty($ticket['ticket']) || empty($ticket['expires_in'])) {
+          echo '获取微信公众号授权失败, 请稍后重试！ 公众平台返回原始数据为: <br />';
+          }
+          $record = array();
+          $record['ticket'] = $ticket['ticket'];
+          $record['expire'] = time() + $ticket['expires_in'];
+          $mgh = MGh::findOne($gh['gh_id']);
+          $mgh->jsapi_ticket = serialize($record);
+          $mgh->save();
+          $this->_jsapi_ticket = $record['ticket'];
+          return $this->_jsapi_ticket;
+          } */
+    }
+
+    private function WxGetJsApiTicket() {
+        $gh = $this->gh;
+        $accessToken = $this->getAccessToken();
+        $arr = self::WxApi("https://api.weixin.qq.com/cgi-bin/ticket/getticket", ['type' => 'jsapi', 'access_token' => $accessToken]);
+        $this->checkWxApiResp($arr, [__METHOD__, $this->gh]);
+        return $arr;
     }
 
     private function createNonceStr($length = 16) {
@@ -747,9 +806,9 @@ EOD;
 
     public function checkWxApiResp($resp, $params = []) {
         if (!empty($resp['errcode'])) {
-            U::W([$resp, $params]);
+            //U::W([$resp, $params]);
             if ($resp['errcode'] == 40001) {
-                U::W('checkWxApiResp, refresh token.');
+                //U::W('checkWxApiResp, refresh token.');
                 $this->getAccessToken(true);
                 return true;
             }
@@ -869,6 +928,10 @@ EOD;
         //U::W($arr);
         //return $arr;    
         self::downloadFile($this->WxMediaGetUrl($media_id), $localFileName);
+    }
+
+    public function WxUrlDownload($picurl, $localFileName) {
+        self::downloadFile($picurl, $localFileName);
     }
 
     public function WxgetQRCode($scene_id, $forever = 0) {

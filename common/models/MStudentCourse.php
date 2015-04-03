@@ -59,7 +59,7 @@ class MStudentCourse extends \yii\db\ActiveRecord
         return $this->hasOne(MCourse::className(), ['course_id' => 'course_id']);
     }
 
-	public static function getStudentCourseStatusOptionName($key=null)
+    public static function getStudentCourseStatusOptionName($key=null)
 	{
 		$arr = array(
 			static::STUDENT_COURSE_STATUS_NONE => '已报名',

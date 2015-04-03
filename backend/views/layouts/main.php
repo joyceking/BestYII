@@ -212,7 +212,7 @@ use yii\widgets\Breadcrumbs;
                     ],
 
                     [
-                        'label'=>Yii::t('backend', 'Class'),
+                        'label'=>Yii::t('backend', 'Group'),
                         'icon'=>'<i class="fa fa-bar-chart-o"></i>',
                         'url'=>['/class/index']
                     ],

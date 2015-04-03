@@ -10,16 +10,13 @@ use common\models\MGroup;
 use common\models\MTeacher;
 use common\models\MPhoto;
 use common\models\MPhotoOwner;
-use common\models\MSubcourse;
-use common\models\U;
+
 
 use \yii\widgets\ListView;
 use yii\grid\GridView;
 ?>
-
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <!-- 新 Bootstrap 核心 CSS 文件 -->
@@ -32,16 +29,15 @@ use yii\grid\GridView;
 <script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
 
 <title>签到记录</title>
-
 </head>
-
 <style type="text/css">
   body{padding: 10px;}
+  .info td,.success td,.table>tbody>tr>td{
+  text-align:center;
+  vertical-align: middle;
+  }
 </style>
-
 <body>
-
-
 <img src='<?php echo MPhoto::getUploadPicUrl('qdjl-tw.jpg') ?>' width='100%' class="img-rounded">
 <br><br>
 
@@ -57,53 +53,41 @@ use yii\grid\GridView;
         </tr>
 
 		<?php 
-//			$signonsX = $student->getCourseScheduleSignonsX();
-      //			foreach($signonsX as $group_id => $signons) { 
-			$signonsX = $student->getCourseScheduleSignonsY();
-			foreach($signonsX as $subcourse_id => $signons) { 
+			$signonsX = $student->getCourseScheduleSignonsX();
+			foreach($signonsX as $group_id => $signons) { 
 		?>
 			<?php 
-//				$group = MGroup::findOne($group_id);
-//				$course = $group->course;
-				$subcourse = MSubcourse::findOne($subcourse_id);
+				$group = MGroup::findOne($group_id);
+				$course = $group->course;
 			?> 
-
             <tr class="success">
                 <td>班级</td>
-                <td colspan="3">
-                <?php 
-                //echo $course->title .'/'.$group->title ;
-                echo $subcourse->title;
-                ?></td>
+                <td colspan="3" style="text-align:center;vertical-align: middle;"><?php echo $course->title ?>/<?php echo $group->title ?></td>
             </tr>
-
 			<?php foreach($signons as $signon) { ?>
 				<?php 
-                    $signon=$signon[0];
 			        //$courseSchedule = MCourseSchedule::findOne($signon->course_schedule_id);
 					$courseSchedule = $signon->courseSchedule;
 					//$teacher = MTeacher::findOne($courseSchedule->teacher_id);
 				?> 
                 <tr>
-                   <td><?php echo $courseSchedule->courseUnit->title ?></td>
+                   <td width="30%"><?php echo $courseSchedule->courseUnit->title ?></td>
               
 				<?php 
 					if($signon->is_signon == 0){
 				?>
-					<td bgcolor="white">&nbsp;</td>
+					<td bgcolor="white" width="10%">&nbsp;</td>
 				<?php } else if($signon->is_signon == 1) {?>
-					<td><span style='color:green' class='glyphicon glyphicon-ok'></td>
+					<td width="10%"><span style='color:green' class='glyphicon glyphicon-ok'></td>
 				<?php } else if($signon->is_signon == 2) {?>
-					<td><span style='color:red' class='glyphicon glyphicon-remove'></td>
+					<td width="10%"><span style='color:red' class='glyphicon glyphicon-remove'></td>
 				<?php } else {?>
-					<td bgcolor="white">&nbsp;</td>
+					<td bgcolor="white" width="10%">&nbsp;</td>
 				<?php } ?>
-                   <td>
+                   <td width="35%">
                    <?php echo $courseSchedule->start_time ?>
                    </td>
-
-                   <td>
-
+                   <td width="25%">
                    <!-- 学生姓名 -->
                    <span class='student_<?= $i ?>'><?php echo $student->name ?></span>
 
@@ -118,10 +102,8 @@ use yii\grid\GridView;
 
                    <!-- 老师 -->
                    <span class='teacher_<?= $i ?>'><?php echo empty($courseSchedule->teacher->name)?'--':$courseSchedule->teacher->name ?></span>
-
                    <!-- 时长 -->
                    <span class='course_unit_minutes_<?= $i ?>'><?php echo $courseSchedule->courseUnit->minutes ?></span>
-
                    <!-- 签到情况 -->
                    <span class='signon_<?= $i ?>'>
                    <?php 
@@ -133,11 +115,8 @@ use yii\grid\GridView;
                     	echo '--';
                      ?>
                    </span>
-
                    <!-- 评语 -->
                    <span class='memo_<?= $i ?>'><?php echo $signon->memo ?></span>
-
-
             		<!-- 签到照片 -->
                    <span class='signon_photo_<?= $i ?>'>
 						<?php
@@ -167,8 +146,6 @@ use yii\grid\GridView;
     <?php } ?>
    
   </table>
-
-
 	<?php 
 		$show = false;
 		yii\bootstrap\Modal::begin([
@@ -258,24 +235,17 @@ use yii\grid\GridView;
     	{ ?>
 
 		<?php 
-//			$signonsX = $student->getCourseScheduleSignonsX();
-//			foreach($signonsX as $group_id => $signons) { 
-			$signonsX = $student->getCourseScheduleSignonsY();
-			foreach($signonsX as $subcourse_id => $signons) { 
-
+			$signonsX = $student->getCourseScheduleSignonsX();
+			foreach($signonsX as $group_id => $signons) { 
 		?>
 			<?php 
-//				$group = MGroup::findOne($group_id);
-//				$course = $group->course;
-				$subcourse = MSubcourse::findOne($subcourse_id);
+				$group = MGroup::findOne($group_id);
+				$course = $group->course;
 			?> 
 
 			<?php foreach($signons as $signon) { ?>
 				<?php 
-                    $signon=$signon[0];
-//			        $courseSchedule = MCourseSchedule::findOne($signon->course_schedule_id);
-					$courseSchedule = $signon->courseSchedule;
-
+			        $courseSchedule = MCourseSchedule::findOne($signon->course_schedule_id);
 				?> 				
 					$(".student_<?= $i ?>").hide();
 					$(".course_<?= $i ?>").hide();

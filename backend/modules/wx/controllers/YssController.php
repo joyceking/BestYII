@@ -52,12 +52,13 @@ class YssController extends Controller {
       }
      */
     public $jsapiPackage;
-    public function __construct($id, $module, $config = array()) {
-        parent::__construct($id, $module, $config);
+
+    public function init() {
+        parent::init();
         Yii::$app->wx->setGhId(MGh::GH_IDEALANGEL);
         $this->jsapiPackage = Yii::$app->wx->getSignPackage();
     }
-    
+
     public function actionAdabout($gh_id, $openid) {
         $this->layout = false;
         $school = MSchool::findOne(MSchool::getSchoolIdFromSession());
@@ -222,7 +223,38 @@ class YssController extends Controller {
         if (!$model->save()) {
             throw new NotFoundHttpException('save signon to db failed!');
         }
-
+        Yii::$app->wx->setGhId(MGh::GH_IDEALANGEL);
+        $templateId = 'YtGIMW1qlYjAIDBX2OPpTA8wzpsj_y7vMR-oVeeQwHw';
+        $tousers = $model->student->ownerId;
+        if (is_array($tousers)) {
+            foreach ($tousers as $touser) {
+                $newtouser = $touser['openid'];
+                $url = "http://b.idealangel.cn/index.php?r=wx/yss/mycourse&gh_id=gh_85f1ee57e887&openid=" . $newtouser . "&student_ids=" . $touser['owner_id'];
+                $data = array(
+                    'first' => array('value' => $model->student->name . '的家长您好，' . $model->student->name . '已经签到', 'color' => '#2E2EB2'),
+                    'keyword1' => array('value' => $model->student->name, 'color' => '#FF6600'),
+                    'keyword2' => array('value' => $model->student->student_id, 'color' => '#2D4488'),
+                    'keyword3' => array('value' => date('Y-m-d H:i:s'), 'color' => '#00CC00'),
+                    'keyword4' => array('value' => '上课签到', 'color' => '#FF0000'),
+                    'remark' => array('value' => '感谢您对爱迪天才的支持！用心做服务！用爱做教育！总部热线：4000-999-027！', 'color' => '#009999')
+                );
+                $token = Yii::$app->wx->GetAccessToken();
+                Yii::$app->wx->sendTemplateMessage($data, $newtouser, $templateId, $url, $token);
+            }
+        } else {
+            $newtouser = $touser['openid'];
+            $url = "http://b.idealangel.cn/index.php?r=wx/yss/mycourse&gh_id=gh_85f1ee57e887&openid=" . $newtouser . "&student_ids=" . $touser['owner_id'];
+            $data = array(
+                'first' => array('value' => $model->student->name . '的家长您好，' . $model->student->name . '已经签到', 'color' => '#2E2EB2'),
+                'keyword1' => array('value' => $model->student->name, 'color' => '#FF6600'),
+                'keyword2' => array('value' => $model->student->student_id, 'color' => '#2D4488'),
+                'keyword3' => array('value' => date('Y-m-d H:i:s'), 'color' => '#00CC00'),
+                'keyword4' => array('value' => '上课签到', 'color' => '#FF0000'),
+                'remark' => array('value' => '感谢您对爱迪天才的支持！用心做服务！用爱做教育！总部热线：4000-999-027！', 'color' => '#009999')
+            );
+            $token = Yii::$app->wx->GetAccessToken();
+            Yii::$app->wx->sendTemplateMessage($data, $newtouser, $templateId, $url, $token);
+        }
         return $this->redirect(['signlist', 'teacher_id' => $model->courseSchedule->teacher_id]);
     }
 
@@ -358,8 +390,8 @@ class YssController extends Controller {
     //http://127.0.0.1/yss/backend/web/index.php?r=wx/yss/mybaby&gh_id=gh_78539d18fdcc&openid=o6biBt5yaB7d3i0YTSkgFSAHmpdo&student_ids=1
     public function actionMybaby($gh_id, $openid, $student_ids) {
         $this->layout = false;
+        $student_id = $student_ids;
         $student_ids = explode(':', $student_ids);
-        $student_id = $student_ids[0];
 //		return 'aa'.$student_id;
         //$school = MSchool::findOne(MSchool::getSchoolIdFromSession());
         //$students = $school->students;
@@ -370,7 +402,7 @@ class YssController extends Controller {
         //   $photos = MPhotoOwner::getPhotosByOwner(MPhotoOwner::PHOTO_OWNER_SCHOOLBRANCH, $schoolbranch->schoolbranch_id, 2);
         //}
 
-        return $this->render('mybaby', ['gh_id' => $gh_id, 'openid' => $openid, 'student_id' => $student_id,'signPackage'=>$this->jsapiPackage]);
+        return $this->render('mybaby', ['gh_id' => $gh_id, 'openid' => $openid, 'student_ids' => $student_ids,'student_id'=>$student_id, 'signPackage' => $this->jsapiPackage]);
     }
 
     //http://127.0.0.1/yss/backend/web/index.php?r=wx/yss/mycourse&gh_id=gh_78539d18fdcc&openid=o6biBt5yaB7d3i0YTSkgFSAHmpdo&student_ids=1
@@ -380,11 +412,22 @@ class YssController extends Controller {
         Yii::$app->wx->setGhId($gh_id);
         $student_ids = explode(':', $student_ids);
         foreach ($student_ids as $student_id) {
+            $schdules = MCourseScheduleSignon::find($student_id)->all();
+            foreach ($schdules as $schdule) {
+                //var_dump($schdule->courseSchedule->start_time);
+            }
+            //exit;
             $student = MStudent::findOne($student_id);
+
+            /* $studentSchedules = $student->courseSchedules;
+              foreach ($studentSchedules as $studentSchedule) {
+              var_dump($studentSchedule->group->title);
+              }
+
+              exit; */
             if ($student !== null) {
-//				$courseSchedules = $student->getCourseSchedulesX();
-                $courseSchedules = $student->getCourseSchedulesY();
-//				U::W($courseSchedules);			
+                $courseSchedules = $student->getCourseSchedulesX();
+                //U::W($courseSchedules);			
                 $students[] = $student;
             }
         }
@@ -401,9 +444,8 @@ class YssController extends Controller {
         foreach ($student_ids as $student_id) {
             $student = MStudent::findOne($student_id);
             if ($student !== null) {
-//				$signons = $student->getCourseScheduleSignonsX();
-                $signons = $student->getCourseScheduleSignonsY();
-//				U::W($signons);
+                $signons = $student->getCourseScheduleSignonsX();
+                U::W($signons);
                 $students[] = $student;
             }
         }

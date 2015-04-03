@@ -45,14 +45,14 @@ $this->params['breadcrumbs'][] = $this->title;
             'prepare:ntext',
             // 'caution:ntext',
             'minutes',
-
+/*
 			[
 				'label' => '此课时上的建班数量',
                 'format'=>'html',
 				'value'=>function ($model, $key, $index, $column) { 
 					return count($model->groups).' '.Html::a('<span>详情</span>', ['group/index', 'course_unit_id'=>$model->course_unit_id]);
 				},
-			],
+			],*/
 
             ['class' => 'yii\grid\ActionColumn', 'template' => '{update} {delete}'],
         ],

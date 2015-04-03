@@ -8,8 +8,7 @@ $this->title = Yii::t('backend', 'Course Schedule');
 //$this->params['breadcrumbs'][] =  ['label'=>"{$group->title} [{$group->group_id}]", 'url'=>['/group']];
 
 $this->params['breadcrumbs'][] =  ['label'=>$group->courseUnit->course->title, 'url'=>['/course']];
-$this->params['breadcrumbs'][] =  ['label'=>$group->courseUnit->title, 'url'=>['/courseunit', 'course_id'=>$group->courseUnit->course_id]];
-$this->params['breadcrumbs'][] =  ['label'=>"{$group->title} [{$group->group_id}]", 'url'=>['/group', 'course_unit_id'=>$group->courseUnit->course_unit_id]];
+$this->params['breadcrumbs'][] =  ['label'=>"{$group->title} [{$group->group_id}]", 'url'=>['/class']];
 
 $this->params['breadcrumbs'][] = $this->title;
 
